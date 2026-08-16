@@ -1,0 +1,64 @@
+{
+  "configVersion": "v2",
+  "app": {
+    "appId": 1123680,
+    "appName": "Gastos Pareja",
+    "appType": "app",
+    "version": {
+      "code": 1,
+      "name": "1.0.0"
+    },
+    "icon": "icon.png",
+    "vender": "zepp",
+    "description": "Cargar y consultar el balance de gastos compartidos"
+  },
+  "permissions": [
+    "data:os.device.info",
+    "device:os.local_storage"
+  ],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "2.0.0",
+      "target": "2.0.0",
+      "minVersion": "2.0.0"
+    }
+  },
+  "targets": {
+    "320x380-amazfit-bip-5": {
+      "module": {
+        "page": {
+          "pages": [
+            "page/balance/index",
+            "page/categories/index",
+            "page/keypad/index",
+            "page/confirm/index",
+            "page/result/index"
+          ]
+        },
+        "app-side": {
+          "path": "app-side/index"
+        },
+        "setting": {
+          "path": "setting/index"
+        }
+      },
+      "platforms": [
+        {
+          "name": "Altai",
+          "deviceSource": 8454400
+        },
+        {
+          "name": "AltaiW",
+          "deviceSource": 8454401
+        }
+      ],
+      "designWidth": 320
+    }
+  },
+  "i18n": {
+    "en-US": {
+      "appName": "Gastos Pareja"
+    }
+  },
+  "defaultLanguage": "en-US"
+}
