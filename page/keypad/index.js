@@ -9,11 +9,15 @@ import { BG_COLOR, TEXT_COLOR, MUTED_COLOR, SURFACE_COLOR, SURFACE_PRESS_COLOR }
 const logger = Logger.getLogger('keypad-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
+// Category and amount share a single row (category left, amount right)
+// instead of stacking on separate rows — frees ~35px of height, which goes
+// straight into taller keypad cells below.
 const TOP = 64
-const LABEL_H = 22
-const AMOUNT_TOP = TOP + LABEL_H + 4
-const AMOUNT_H = 46
-const KEYPAD_TOP = AMOUNT_TOP + AMOUNT_H + 10
+const HEADER_H = 40
+const CAT_W = 130
+const AMOUNT_X = CAT_W + 14
+const AMOUNT_W = DEVICE_WIDTH - AMOUNT_X - 14
+const KEYPAD_TOP = TOP + HEADER_H + 8
 
 const COLS = 3
 const ROWS = 5
@@ -70,24 +74,25 @@ Page({
     createWidget(widget.FILL_RECT, { x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: BG_COLOR })
 
     createWidget(widget.TEXT, {
-      x: 0,
+      x: 14,
       y: TOP,
-      w: DEVICE_WIDTH,
-      h: LABEL_H,
-      text: cat.label,
+      w: CAT_W,
+      h: HEADER_H,
+      text: cat.short,
       text_size: 16,
       color: MUTED_COLOR,
-      align_h: align.CENTER_H,
+      align_h: align.LEFT,
+      align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
 
     w.amountText = createWidget(widget.TEXT, {
-      x: 10,
-      y: AMOUNT_TOP,
-      w: DEVICE_WIDTH - 20,
-      h: AMOUNT_H,
+      x: AMOUNT_X,
+      y: TOP,
+      w: AMOUNT_W,
+      h: HEADER_H,
       text: '$0.00',
-      text_size: 34,
+      text_size: 26,
       color: TEXT_COLOR,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
@@ -113,6 +118,9 @@ Page({
         click_func: () => this.onKey(key),
       })
     })
+    // No corner brackets here — the keypad grid fills all the way to the
+    // bottom edge by design (maximizes button size), so there's no clean
+    // margin left for them without overlapping the last row of keys.
   },
   onKey(key) {
     const s = this.state

@@ -5,6 +5,7 @@ import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR, GREEN_COLOR, RED_COLOR, SURFACE_COLOR, SURFACE_PRESS_COLOR } from '../../utils/theme'
 import { formatMoney, formatDateTime } from '../../utils/format'
+import { drawCornerBrackets } from '../../utils/decor'
 
 const logger = Logger.getLogger('result-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -13,7 +14,7 @@ const TOP = 64
 const BTN_W = 220
 const BTN_H = 64
 const BTN_X = (DEVICE_WIDTH - BTN_W) / 2
-const BTN_Y = 288
+const BTN_Y = 270
 
 Page({
   state: {
@@ -76,6 +77,8 @@ Page({
     })
     w.actionBtn.setProperty(prop.VISIBLE, false)
 
+    w.brackets = drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, MUTED_COLOR)
+
     this.saveExpense()
   },
   saveExpense() {
@@ -114,6 +117,8 @@ Page({
     const cat = getCategoryById(this.state.category)
     const s = this.state
 
+    let bracketColor = MUTED_COLOR
+
     if (s.status === 'saving') {
       w.statusText.setProperty(prop.MORE, { text: 'Guardando...', color: TEXT_COLOR })
       w.detailText.setProperty(prop.MORE, { text: `${cat.label}  ${formatMoney(s.amount)}` })
@@ -125,11 +130,15 @@ Page({
       })
       w.actionBtn.setProperty(prop.MORE, { text: 'Listo' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
+      bracketColor = GREEN_COLOR
     } else {
       w.statusText.setProperty(prop.MORE, { text: 'No se pudo guardar', color: RED_COLOR })
       w.detailText.setProperty(prop.MORE, { text: 'Revisa la conexion del telefono e intenta de nuevo.' })
       w.actionBtn.setProperty(prop.MORE, { text: 'Reintentar' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
+      bracketColor = RED_COLOR
     }
+
+    w.brackets.forEach((b) => b.setProperty(prop.MORE, { color: bracketColor }))
   },
 })

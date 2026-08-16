@@ -6,6 +6,7 @@ import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR } from '../../utils/theme'
 import { formatMoney, darken } from '../../utils/format'
+import { drawCornerBrackets } from '../../utils/decor'
 
 const logger = Logger.getLogger('confirm-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -60,7 +61,7 @@ Page({
       w: DEVICE_WIDTH - 20,
       h: 80,
       text: formatMoney(this.state.amount),
-      text_size: 44,
+      text_size: 50,
       color: TEXT_COLOR,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
@@ -82,5 +83,7 @@ Page({
         push({ url: 'page/result/index', params: { category: this.state.category, amount: this.state.amount } })
       },
     })
+
+    drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, cat.color)
   },
 })

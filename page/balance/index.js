@@ -23,6 +23,7 @@ import {
   SURFACE_PRESS_COLOR,
 } from '../../utils/theme'
 import { formatMoney, formatDateTime } from '../../utils/format'
+import { drawCornerBrackets } from '../../utils/decor'
 
 const logger = Logger.getLogger('balance-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -70,18 +71,25 @@ Page({
       text_style: text_style.NONE,
     })
 
+    // The consolidated figure is the whole point of this screen — give it
+    // most of the vertical space and center it, rather than a small line
+    // among others.
     w.amountText = createWidget(widget.TEXT, {
-      x: 10,
-      y: 130,
-      w: DEVICE_WIDTH - 20,
-      h: 90,
+      x: 6,
+      y: 124,
+      w: DEVICE_WIDTH - 12,
+      h: 176,
       text: '--',
-      text_size: 46,
+      // 52 rather than something bigger — needs to fit up to ~9 chars
+      // ("$1,234.56") in ~300px; verify on-device and tune if it clips.
+      text_size: 52,
       color: TEXT_COLOR,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
+
+    w.brackets = drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, MUTED_COLOR)
 
     w.updatedText = createWidget(widget.TEXT, {
       x: 0,
@@ -210,5 +218,6 @@ Page({
     w.updatedText.setProperty(prop.MORE, {
       text: updatedAt ? `Actualizado ${formatDateTime(updatedAt)}` : 'Sin conexion aun',
     })
+    w.brackets.forEach((b) => b.setProperty(prop.MORE, { color }))
   },
 })
