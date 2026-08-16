@@ -5,7 +5,6 @@ import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR, GREEN_COLOR, RED_COLOR, SURFACE_COLOR, SURFACE_PRESS_COLOR } from '../../utils/theme'
 import { formatMoney, formatTime12h } from '../../utils/format'
-import { drawScreenFrame } from '../../utils/decor'
 import { withTimeout } from '../../utils/timeout'
 
 const logger = Logger.getLogger('result-page')
@@ -85,8 +84,6 @@ Page({
     })
     w.actionBtn.setProperty(prop.VISIBLE, false)
 
-    w.frame = drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, TEXT_COLOR)
-
     this.saveExpense()
   },
   saveExpense() {
@@ -133,8 +130,6 @@ Page({
     const cat = getCategoryById(this.state.category)
     const s = this.state
 
-    let frameColor = TEXT_COLOR
-
     if (s.status === 'saving') {
       w.statusText.setProperty(prop.MORE, { text: 'Guardando...', color: TEXT_COLOR })
       w.detailText.setProperty(prop.MORE, { text: `${cat.label}  ${formatMoney(s.amount)}` })
@@ -146,15 +141,11 @@ Page({
       })
       w.actionBtn.setProperty(prop.MORE, { text: 'Listo' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
-      frameColor = GREEN_COLOR
     } else {
       w.statusText.setProperty(prop.MORE, { text: 'No se pudo guardar', color: RED_COLOR })
       w.detailText.setProperty(prop.MORE, { text: 'Revisa la conexion del telefono e intenta de nuevo.' })
       w.actionBtn.setProperty(prop.MORE, { text: 'Reintentar' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
-      frameColor = RED_COLOR
     }
-
-    w.frame.forEach((f) => f.setProperty(prop.MORE, { color: frameColor }))
   },
 })

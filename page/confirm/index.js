@@ -6,7 +6,6 @@ import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR } from '../../utils/theme'
 import { formatMoney, darken } from '../../utils/format'
-import { drawScreenFrame } from '../../utils/decor'
 import { genExpenseId } from '../../utils/gastos-firestore'
 
 const logger = Logger.getLogger('confirm-page')
@@ -20,12 +19,8 @@ const BTN_Y = 268
 
 const CAT_Y = TOP + 18
 const CAT_H = 30
-const CAT_LINE_Y = CAT_Y + CAT_H + 4
-const AMOUNT_Y = CAT_LINE_Y + 14
+const AMOUNT_Y = CAT_Y + CAT_H + 18
 const AMOUNT_H = 100
-const AMOUNT_LINE_Y = AMOUNT_Y + AMOUNT_H + 4
-const LINE_W = 160
-const LINE_X = (DEVICE_WIDTH - LINE_W) / 2
 
 Page({
   state: {
@@ -64,7 +59,6 @@ Page({
       align_h: align.CENTER_H,
       text_style: text_style.NONE,
     })
-    createWidget(widget.FILL_RECT, { x: LINE_X, y: CAT_LINE_Y, w: LINE_W, h: 2, color: cat.color })
 
     createWidget(widget.TEXT, {
       x: 10,
@@ -78,7 +72,6 @@ Page({
       align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
-    createWidget(widget.FILL_RECT, { x: LINE_X, y: AMOUNT_LINE_Y, w: LINE_W, h: 2, color: cat.color })
 
     createWidget(widget.BUTTON, {
       x: BTN_X,
@@ -101,7 +94,5 @@ Page({
         })
       },
     })
-
-    drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, cat.color)
   },
 })

@@ -22,7 +22,6 @@ import {
   SURFACE_PRESS_COLOR,
 } from '../../utils/theme'
 import { formatMoney, formatTime12h } from '../../utils/format'
-import { drawScreenFrame, drawLabelLines } from '../../utils/decor'
 import { withTimeout } from '../../utils/timeout'
 
 // See page/result for why this is longer than the side service's own
@@ -48,8 +47,6 @@ const EXIT_BTN_Y2 = EXIT_BTN_Y1 + EXIT_BTN_H + EXIT_BTN_GAP
 
 const LABEL_Y = 96
 const LABEL_H = 32
-const LABEL_LINE_W = 170
-const LABEL_LINE_X = (DEVICE_WIDTH - LABEL_LINE_W) / 2
 
 Page({
   state: {
@@ -67,8 +64,6 @@ Page({
     const w = this.state.w
 
     createWidget(widget.FILL_RECT, { x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: BG_COLOR })
-
-    w.lines = drawLabelLines(LABEL_LINE_X, LABEL_LINE_W, LABEL_Y - 8, LABEL_Y + LABEL_H + 4, TEXT_COLOR)
 
     // The status word itself carries the color now (not a muted caption)
     // so green/red reads unmistakably at a glance, per feedback.
@@ -101,8 +96,6 @@ Page({
       align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
-
-    w.frame = drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, TEXT_COLOR)
 
     w.updatedText = createWidget(widget.TEXT, {
       x: 0,
@@ -230,7 +223,5 @@ Page({
     w.updatedText.setProperty(prop.MORE, {
       text: updatedAt ? `Actualizado ${formatTime12h(updatedAt)}` : 'Sin conexion aun',
     })
-    w.frame.forEach((f) => f.setProperty(prop.MORE, { color }))
-    w.lines.forEach((l) => l.setProperty(prop.MORE, { color }))
   },
 })
