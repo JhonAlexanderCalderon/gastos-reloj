@@ -18,6 +18,7 @@ AppSideService({
 
       if (payload.method === 'SAVE_EXPENSE') {
         const result = await saveExpense(settings.settingsStorage, {
+          id: payload.id,
           category: payload.category,
           amount: payload.amount,
         })

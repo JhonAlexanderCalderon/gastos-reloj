@@ -6,8 +6,14 @@ import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR, GREEN_COLOR, RED_COLOR, SURFACE_COLOR, SURFACE_PRESS_COLOR } from '../../utils/theme'
 import { formatMoney, formatDateTime } from '../../utils/format'
 import { drawCornerBrackets } from '../../utils/decor'
+import { withTimeout } from '../../utils/timeout'
 
 const logger = Logger.getLogger('result-page')
+// Comfortably longer than the side service's own internal fetch timeouts
+// (up to ~24s worst case: a refresh-token attempt plus a fresh sign-up,
+// each capped at 12s) so that a real network failure surfaces its actual
+// message instead of being masked by this generic one firing first.
+const REQUEST_TIMEOUT_MS = 30000
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 const TOP = 64
@@ -18,6 +24,7 @@ const BTN_Y = 270
 
 Page({
   state: {
+    id: null,
     category: null,
     amount: 0,
     status: 'saving', // saving | ok | error
@@ -25,7 +32,8 @@ Page({
     w: {},
   },
   onInit(params) {
-    const { category, amount } = params ? JSON.parse(params) : {}
+    const { id, category, amount } = params ? JSON.parse(params) : {}
+    this.state.id = id
     this.state.category = category
     this.state.amount = amount
     // Back from here re-enters the confirm screen with no data loss risk —
@@ -86,8 +94,16 @@ Page({
     this.refreshUI()
 
     const { messageBuilder } = getApp()._options.globalData
-    messageBuilder
-      .request({ method: 'SAVE_EXPENSE', category: this.state.category, amount: this.state.amount })
+    withTimeout(
+      messageBuilder.request({
+        method: 'SAVE_EXPENSE',
+        id: this.state.id,
+        category: this.state.category,
+        amount: this.state.amount,
+      }),
+      REQUEST_TIMEOUT_MS,
+      'El telefono no respondio a tiempo'
+    )
       .then((result) => {
         if (!result || result.ok === false) throw new Error(result && result.error)
         this.state.status = 'ok'

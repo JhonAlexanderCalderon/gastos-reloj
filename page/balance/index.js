@@ -24,6 +24,11 @@ import {
 } from '../../utils/theme'
 import { formatMoney, formatDateTime } from '../../utils/format'
 import { drawCornerBrackets } from '../../utils/decor'
+import { withTimeout } from '../../utils/timeout'
+
+// See page/result for why this is longer than the side service's own
+// internal fetch timeouts.
+const REQUEST_TIMEOUT_MS = 30000
 
 const logger = Logger.getLogger('balance-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -183,8 +188,7 @@ Page({
   },
   loadBalance() {
     const { messageBuilder } = getApp()._options.globalData
-    messageBuilder
-      .request({ method: 'GET_BALANCE' })
+    withTimeout(messageBuilder.request({ method: 'GET_BALANCE' }), REQUEST_TIMEOUT_MS, 'timeout')
       .then((result) => {
         if (!result || result.ok === false) throw new Error(result && result.error)
         this.state.diff = result.diff

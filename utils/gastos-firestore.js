@@ -1,9 +1,20 @@
 import { FIREBASE_CONFIG } from './firebase-config'
 import { PINNED_COUPLE_ID, PINNED_PAYER_UID, PINNED_PAYER_NAME } from './gastos-config'
 import { calcBalance, monthKey } from './balance'
+import { withTimeout } from './timeout'
 
 const BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents`
 const COUPLE_URL = `${BASE_URL}/couples/${PINNED_COUPLE_ID}`
+
+// Bounds every network step so a bad connection fails fast into the
+// retry/error UI instead of leaving the watch stuck on "Guardando..."
+// indefinitely — this is what was happening before: no timeout meant the
+// promise just never settled until the underlying request eventually did.
+const FETCH_TIMEOUT_MS = 12000
+
+function timedFetch(url, options) {
+  return withTimeout(fetch(url, options), FETCH_TIMEOUT_MS, 'La conexion tardo demasiado')
+}
 
 function recordSuccess(storage, direction) {
   storage.setItem('_fbLastSyncAt', new Date().toISOString())
@@ -33,7 +44,7 @@ async function getIdToken(storage) {
 
   if (cachedRefreshToken) {
     try {
-      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`, {
+      const res = await timedFetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `grant_type=refresh_token&refresh_token=${cachedRefreshToken}`,
@@ -45,7 +56,7 @@ async function getIdToken(storage) {
     }
   }
 
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`, {
+  const res = await timedFetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ returnSecureToken: true }),
@@ -60,7 +71,7 @@ export async function getWatchUid(storage) {
   const idToken = await getIdToken(storage)
   // The token itself doesn't carry the uid in a form worth parsing here —
   // getSelfAccount is the simple documented way to read it back.
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_CONFIG.apiKey}`, {
+  const res = await timedFetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_CONFIG.apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken }),
@@ -76,7 +87,7 @@ export async function getBalance(storage) {
     // consolidated total (HomePage.jsx: `historicBalance`), not just the
     // current month — a month-filtered query here would show a different
     // number than what the user sees first in the PWA.
-    const res = await fetch(`${COUPLE_URL}:runQuery`, {
+    const res = await timedFetch(`${COUPLE_URL}:runQuery`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
@@ -103,18 +114,21 @@ export async function getBalance(storage) {
   }
 }
 
-function genExpenseId() {
+export function genExpenseId() {
   return 'w' + Date.now() + Math.floor(Math.random() * 1000)
 }
 
-export async function saveExpense(storage, { category, amount }) {
+// id must be generated once by the caller (confirm page) and reused across
+// retries — PATCH to the same doc path makes a retry idempotent (just
+// overwrites identical data) instead of creating a duplicate expense if an
+// earlier attempt actually reached Firestore but its response was lost.
+export async function saveExpense(storage, { id, category, amount }) {
   try {
     const idToken = await getIdToken(storage)
-    const id = genExpenseId()
     const now = new Date().toISOString()
     const month = monthKey()
 
-    const res = await fetch(`${COUPLE_URL}/expenses/${id}`, {
+    const res = await timedFetch(`${COUPLE_URL}/expenses/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({

@@ -7,6 +7,7 @@ import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR } from '../../utils/theme'
 import { formatMoney, darken } from '../../utils/format'
 import { drawCornerBrackets } from '../../utils/decor'
+import { genExpenseId } from '../../utils/gastos-firestore'
 
 const logger = Logger.getLogger('confirm-page')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -80,7 +81,13 @@ Page({
       normal_color: cat.color,
       press_color: darken(cat.color),
       click_func: () => {
-        push({ url: 'page/result/index', params: { category: this.state.category, amount: this.state.amount } })
+        // Generated once, here — result page reuses this same id on every
+        // retry so a retry after a lost response overwrites instead of
+        // duplicating (see saveExpense's contract).
+        push({
+          url: 'page/result/index',
+          params: { id: genExpenseId(), category: this.state.category, amount: this.state.amount },
+        })
       },
     })
 
