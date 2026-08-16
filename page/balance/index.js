@@ -48,6 +48,15 @@ const EXIT_BTN_Y2 = EXIT_BTN_Y1 + EXIT_BTN_H + EXIT_BTN_GAP
 const LABEL_Y = 96
 const LABEL_H = 32
 
+// Rounded "modern button" card behind the amount — colored border matching
+// the value's own color, dark surface fill, per feedback.
+const CARD_BORDER = 4
+const CARD_W = 280
+const CARD_H = 140
+const CARD_X = (DEVICE_WIDTH - CARD_W) / 2
+const CARD_Y = LABEL_Y + LABEL_H + 12
+const CARD_RADIUS = 28
+
 Page({
   state: {
     diff: 0,
@@ -80,17 +89,38 @@ Page({
       text_style: text_style.NONE,
     })
 
+    // Rounded card behind the figure — outer rect is the colored "border",
+    // inner rect is the dark fill, same two-layer trick used for the
+    // BUTTON-less rounded-border look (Zepp widgets don't support a
+    // stroke-only border).
+    w.cardBorder = createWidget(widget.FILL_RECT, {
+      x: CARD_X,
+      y: CARD_Y,
+      w: CARD_W,
+      h: CARD_H,
+      radius: CARD_RADIUS,
+      color: TEXT_COLOR,
+    })
+    createWidget(widget.FILL_RECT, {
+      x: CARD_X + CARD_BORDER,
+      y: CARD_Y + CARD_BORDER,
+      w: CARD_W - CARD_BORDER * 2,
+      h: CARD_H - CARD_BORDER * 2,
+      radius: CARD_RADIUS - CARD_BORDER,
+      color: SURFACE_COLOR,
+    })
+
     // The consolidated figure is the whole point of this screen — give it
     // most of the vertical space and center it.
     w.amountText = createWidget(widget.TEXT, {
-      x: 6,
-      y: LABEL_Y + LABEL_H + 20,
-      w: DEVICE_WIDTH - 12,
-      h: 168,
+      x: CARD_X + CARD_BORDER,
+      y: CARD_Y + CARD_BORDER,
+      w: CARD_W - CARD_BORDER * 2,
+      h: CARD_H - CARD_BORDER * 2,
       text: '--',
-      // Needs to fit up to ~9 chars ("$1,234.56") in ~300px; verify
+      // Needs to fit up to ~9 chars ("$1,234.56") in ~260px; verify
       // on-device and tune if it clips.
-      text_size: 54,
+      text_size: 48,
       color: TEXT_COLOR,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
@@ -112,6 +142,7 @@ Page({
     const goToCategories = () => push({ url: 'page/categories/index' })
     w.amountText.addEventListener(event.CLICK_DOWN, goToCategories)
     w.statusText.addEventListener(event.CLICK_DOWN, goToCategories)
+    w.cardBorder.addEventListener(event.CLICK_DOWN, goToCategories)
 
     // Exit-confirmation overlay — same shape as the one already proven in
     // the timer app (gesture swallow + Continuar/Salir), minus its
@@ -220,6 +251,7 @@ Page({
 
     w.statusText.setProperty(prop.MORE, { text: label, color })
     w.amountText.setProperty(prop.MORE, { text: formatMoney(Math.abs(diff)), color })
+    w.cardBorder.setProperty(prop.MORE, { color })
     w.updatedText.setProperty(prop.MORE, {
       text: updatedAt ? `Actualizado ${formatTime12h(updatedAt)}` : 'Sin conexion aun',
     })

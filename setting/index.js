@@ -83,6 +83,45 @@ AppSettingsPage({
       View(
         {
           style: {
+            border: '1px solid #eaeaea',
+            borderRadius: '8px',
+            padding: '10px',
+            marginBottom: '14px',
+            backgroundColor: 'white',
+          },
+        },
+        [
+          Text({ bold: true, style: { fontSize: '12px', color: '#333333' } }, 'Como reconectar manualmente'),
+          Text(
+            { style: { fontSize: '11px', color: '#555555', marginTop: '6px' } },
+            'Si el error persiste, es porque el UID de arriba cambio (pasa al reinstalar la app) y ya no coincide con lo que permiten las reglas de Firestore. Pasos:'
+          ),
+          Text(
+            { style: { fontSize: '11px', color: '#333333', marginTop: '6px' } },
+            '1. Copia el UID de la tarjeta de arriba.'
+          ),
+          Text(
+            { style: { fontSize: '11px', color: '#333333', marginTop: '4px' } },
+            '2. En tu computadora, abre el archivo:\ngastos-pwa/firestore.rules'
+          ),
+          Text(
+            { style: { fontSize: '11px', color: '#333333', marginTop: '4px' } },
+            '3. Busca la funcion isPinnedDevice() (cerca del final del archivo) y reemplaza el UID que tiene por el nuevo.'
+          ),
+          Text(
+            { style: { fontSize: '11px', color: '#333333', marginTop: '4px' } },
+            '4. Desde la carpeta gastos-pwa, corre:\nfirebase deploy --only firestore:rules --project gastos-pareja-ca457'
+          ),
+          Text(
+            { style: { fontSize: '11px', color: '#333333', marginTop: '4px' } },
+            '5. Volve a esta pantalla y toca "Verificar conexion".'
+          ),
+        ]
+      ),
+
+      View(
+        {
+          style: {
             border: '1px solid ' + (status.lastError ? '#FCA5A5' : '#DCFCE7'),
             borderRadius: '8px',
             padding: '10px',
@@ -99,7 +138,7 @@ AppSettingsPage({
             ),
           Text(
             { style: { fontSize: '10px', color: '#888888', marginTop: '8px' } },
-            'Si aparece un error persistente: revisa que el telefono tenga internet, cerra esta pantalla de Ajustes y volvela a abrir, y proba "Verificar conexion" de nuevo. Si el UID de arriba cambia (por ejemplo tras reinstalar la app), hay que actualizar las reglas de Firestore de gastos-pareja con el nuevo valor para que el reloj pueda seguir leyendo y guardando gastos.'
+            'Si aparece un error persistente: revisa que el telefono tenga internet, cerra esta pantalla de Ajustes y volvela a abrir, y proba "Verificar conexion" de nuevo. Si el error sigue, segui los pasos de "Como reconectar manualmente" mas arriba.'
           ),
         ]
       ),
