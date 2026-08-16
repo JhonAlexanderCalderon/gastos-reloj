@@ -39,21 +39,34 @@ export function getSyncStatus(storage) {
 // project (gastos-pareja-ca457) — this identity is separate from the
 // quick-notes watch's, and gets pinned in gastos-pwa/firestore.rules once
 // generated for the first time.
+//
+// Only these specific securetoken.googleapis.com error codes mean the
+// refresh token is genuinely dead and a fresh anonymous identity is
+// warranted. Anything else (a timeout, a dropped connection, a transient
+// 5xx) must NOT fall through to minting a new identity — that would
+// silently and permanently orphan the pinned UID in firestore.rules over
+// what was really just a bad moment on the network. This was a real bug:
+// every refresh hiccup was quietly rotating the watch's identity.
+const REFRESH_INVALID_CODES = ['INVALID_REFRESH_TOKEN', 'TOKEN_EXPIRED', 'USER_DISABLED', 'USER_NOT_FOUND']
+
 async function getIdToken(storage) {
   const cachedRefreshToken = storage.getItem('_fbRefreshToken')
 
   if (cachedRefreshToken) {
-    try {
-      const res = await timedFetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `grant_type=refresh_token&refresh_token=${cachedRefreshToken}`,
-      })
-      const data = await res.json()
-      if (data.id_token) return data.id_token
-    } catch (e) {
-      // fall through to a fresh anonymous sign-up below
+    const res = await timedFetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=refresh_token&refresh_token=${cachedRefreshToken}`,
+    })
+    const data = await res.json()
+    if (data.id_token) return data.id_token
+
+    const code = data.error?.message || ''
+    const isDeadToken = REFRESH_INVALID_CODES.some((c) => code.indexOf(c) === 0)
+    if (!isDeadToken) {
+      throw new Error(code || `Firestore respondio ${res.status} al renovar la sesion`)
     }
+    // else: token is genuinely dead — fall through to a fresh sign-up
   }
 
   const res = await timedFetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`, {
