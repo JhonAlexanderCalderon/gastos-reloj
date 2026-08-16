@@ -97,25 +97,28 @@ AppSettingsPage({
               { style: { fontSize: '11px', color: '#B91C1C', marginTop: '4px' } },
               `Ultimo error: ${status.lastError}`
             ),
-          Button({
-            label: this.state.checking ? 'Verificando...' : 'Verificar conexion',
-            style: {
-              fontSize: '12px',
-              lineHeight: '28px',
-              borderRadius: '20px',
-              background: '#409EFF',
-              color: 'white',
-              textAlign: 'center',
-              marginTop: '8px',
-            },
-            onClick: () => this.checkConnection(),
-          }),
           Text(
             { style: { fontSize: '10px', color: '#888888', marginTop: '8px' } },
             'Si aparece un error persistente: revisa que el telefono tenga internet, cerra esta pantalla de Ajustes y volvela a abrir, y proba "Verificar conexion" de nuevo. Si el UID de arriba cambia (por ejemplo tras reinstalar la app), hay que actualizar las reglas de Firestore de gastos-pareja con el nuevo valor para que el reloj pueda seguir leyendo y guardando gastos.'
           ),
         ]
       ),
+
+      // Standalone, after both info cards — not stacked inside the
+      // diagnostics card, where it visually ran into the status text.
+      Button({
+        label: this.state.checking ? 'Verificando...' : 'Verificar conexion',
+        style: {
+          fontSize: '13px',
+          lineHeight: '32px',
+          borderRadius: '20px',
+          background: '#409EFF',
+          color: 'white',
+          textAlign: 'center',
+          marginTop: '14px',
+        },
+        onClick: () => this.checkConnection(),
+      }),
     ])
   },
 })

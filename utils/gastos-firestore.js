@@ -72,20 +72,16 @@ export async function getWatchUid(storage) {
 export async function getBalance(storage) {
   try {
     const idToken = await getIdToken(storage)
-    const currentMonth = monthKey()
+    // Matches the PWA's headline balance card, which is the all-time
+    // consolidated total (HomePage.jsx: `historicBalance`), not just the
+    // current month — a month-filtered query here would show a different
+    // number than what the user sees first in the PWA.
     const res = await fetch(`${COUPLE_URL}:runQuery`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
         structuredQuery: {
           from: [{ collectionId: 'expenses' }],
-          where: {
-            fieldFilter: {
-              field: { fieldPath: 'month' },
-              op: 'EQUAL',
-              value: { stringValue: currentMonth },
-            },
-          },
         },
       }),
     })
