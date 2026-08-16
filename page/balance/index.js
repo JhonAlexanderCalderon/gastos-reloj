@@ -14,7 +14,6 @@ import {
 import {
   BG_COLOR,
   TEXT_COLOR,
-  MUTED_COLOR,
   GREEN_COLOR,
   RED_COLOR,
   DANGER_COLOR,
@@ -22,8 +21,8 @@ import {
   SURFACE_COLOR,
   SURFACE_PRESS_COLOR,
 } from '../../utils/theme'
-import { formatMoney, formatDateTime } from '../../utils/format'
-import { drawCornerBrackets } from '../../utils/decor'
+import { formatMoney, formatTime12h } from '../../utils/format'
+import { drawScreenFrame, drawLabelLines } from '../../utils/decor'
 import { withTimeout } from '../../utils/timeout'
 
 // See page/result for why this is longer than the side service's own
@@ -47,6 +46,11 @@ const EXIT_BTN_GAP = 16
 const EXIT_BTN_Y1 = 140
 const EXIT_BTN_Y2 = EXIT_BTN_Y1 + EXIT_BTN_H + EXIT_BTN_GAP
 
+const LABEL_Y = 96
+const LABEL_H = 32
+const LABEL_LINE_W = 170
+const LABEL_LINE_X = (DEVICE_WIDTH - LABEL_LINE_W) / 2
+
 Page({
   state: {
     diff: 0,
@@ -64,37 +68,41 @@ Page({
 
     createWidget(widget.FILL_RECT, { x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: BG_COLOR })
 
+    w.lines = drawLabelLines(LABEL_LINE_X, LABEL_LINE_W, LABEL_Y - 8, LABEL_Y + LABEL_H + 4, TEXT_COLOR)
+
+    // The status word itself carries the color now (not a muted caption)
+    // so green/red reads unmistakably at a glance, per feedback.
     w.statusText = createWidget(widget.TEXT, {
       x: 0,
-      y: 90,
+      y: LABEL_Y,
       w: DEVICE_WIDTH,
-      h: 28,
+      h: LABEL_H,
       text: 'Cargando...',
-      text_size: 20,
-      color: MUTED_COLOR,
-      align_h: align.CENTER_H,
-      text_style: text_style.NONE,
-    })
-
-    // The consolidated figure is the whole point of this screen — give it
-    // most of the vertical space and center it, rather than a small line
-    // among others.
-    w.amountText = createWidget(widget.TEXT, {
-      x: 6,
-      y: 124,
-      w: DEVICE_WIDTH - 12,
-      h: 176,
-      text: '--',
-      // 52 rather than something bigger — needs to fit up to ~9 chars
-      // ("$1,234.56") in ~300px; verify on-device and tune if it clips.
-      text_size: 52,
+      text_size: 24,
       color: TEXT_COLOR,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
 
-    w.brackets = drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, MUTED_COLOR)
+    // The consolidated figure is the whole point of this screen — give it
+    // most of the vertical space and center it.
+    w.amountText = createWidget(widget.TEXT, {
+      x: 6,
+      y: LABEL_Y + LABEL_H + 20,
+      w: DEVICE_WIDTH - 12,
+      h: 168,
+      text: '--',
+      // Needs to fit up to ~9 chars ("$1,234.56") in ~300px; verify
+      // on-device and tune if it clips.
+      text_size: 54,
+      color: TEXT_COLOR,
+      align_h: align.CENTER_H,
+      align_v: align.CENTER_V,
+      text_style: text_style.NONE,
+    })
+
+    w.frame = drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, TEXT_COLOR)
 
     w.updatedText = createWidget(widget.TEXT, {
       x: 0,
@@ -103,7 +111,7 @@ Page({
       h: 22,
       text: '',
       text_size: 14,
-      color: MUTED_COLOR,
+      color: TEXT_COLOR,
       align_h: align.CENTER_H,
       text_style: text_style.NONE,
     })
@@ -217,11 +225,12 @@ Page({
     const color = owed ? GREEN_COLOR : owes ? RED_COLOR : TEXT_COLOR
     const label = owed ? 'Te deben' : owes ? 'Debes' : 'Al dia'
 
-    w.statusText.setProperty(prop.MORE, { text: label, color: MUTED_COLOR })
+    w.statusText.setProperty(prop.MORE, { text: label, color })
     w.amountText.setProperty(prop.MORE, { text: formatMoney(Math.abs(diff)), color })
     w.updatedText.setProperty(prop.MORE, {
-      text: updatedAt ? `Actualizado ${formatDateTime(updatedAt)}` : 'Sin conexion aun',
+      text: updatedAt ? `Actualizado ${formatTime12h(updatedAt)}` : 'Sin conexion aun',
     })
-    w.brackets.forEach((b) => b.setProperty(prop.MORE, { color }))
+    w.frame.forEach((f) => f.setProperty(prop.MORE, { color }))
+    w.lines.forEach((l) => l.setProperty(prop.MORE, { color }))
   },
 })

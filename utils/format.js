@@ -18,12 +18,15 @@ export function darken(hex, factor = 0.7) {
   return (r << 16) | (g << 8) | b
 }
 
-export function formatDateTime(isoString) {
+// 12-hour clock, no date — e.g. "5:13 PM". Used everywhere a timestamp is
+// shown on-device; the date itself isn't useful at this glance size.
+export function formatTime12h(isoString) {
   if (!isoString) return ''
   const d = new Date(isoString)
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mm = String(d.getMinutes()).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mo = String(d.getMonth() + 1).padStart(2, '0')
-  return `${dd}/${mo} ${hh}:${mm}`
+  let h = d.getHours()
+  const m = String(d.getMinutes()).padStart(2, '0')
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12
+  if (h === 0) h = 12
+  return `${h}:${m} ${ampm}`
 }

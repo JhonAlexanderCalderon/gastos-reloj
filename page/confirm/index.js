@@ -4,9 +4,9 @@ import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getDeviceInfo } from '@zos/device'
 import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
-import { BG_COLOR, TEXT_COLOR, MUTED_COLOR } from '../../utils/theme'
+import { BG_COLOR, TEXT_COLOR } from '../../utils/theme'
 import { formatMoney, darken } from '../../utils/format'
-import { drawCornerBrackets } from '../../utils/decor'
+import { drawScreenFrame } from '../../utils/decor'
 import { genExpenseId } from '../../utils/gastos-firestore'
 
 const logger = Logger.getLogger('confirm-page')
@@ -16,7 +16,16 @@ const TOP = 64
 const BTN_W = 260
 const BTN_H = 70
 const BTN_X = (DEVICE_WIDTH - BTN_W) / 2
-const BTN_Y = 262
+const BTN_Y = 268
+
+const CAT_Y = TOP + 18
+const CAT_H = 30
+const CAT_LINE_Y = CAT_Y + CAT_H + 4
+const AMOUNT_Y = CAT_LINE_Y + 14
+const AMOUNT_H = 100
+const AMOUNT_LINE_Y = AMOUNT_Y + AMOUNT_H + 4
+const LINE_W = 160
+const LINE_X = (DEVICE_WIDTH - LINE_W) / 2
 
 Page({
   state: {
@@ -46,21 +55,22 @@ Page({
 
     createWidget(widget.TEXT, {
       x: 0,
-      y: TOP + 20,
+      y: CAT_Y,
       w: DEVICE_WIDTH,
-      h: 30,
+      h: CAT_H,
       text: cat.label,
       text_size: 20,
-      color: MUTED_COLOR,
+      color: TEXT_COLOR,
       align_h: align.CENTER_H,
       text_style: text_style.NONE,
     })
+    createWidget(widget.FILL_RECT, { x: LINE_X, y: CAT_LINE_Y, w: LINE_W, h: 2, color: cat.color })
 
     createWidget(widget.TEXT, {
       x: 10,
-      y: TOP + 60,
+      y: AMOUNT_Y,
       w: DEVICE_WIDTH - 20,
-      h: 80,
+      h: AMOUNT_H,
       text: formatMoney(this.state.amount),
       text_size: 50,
       color: TEXT_COLOR,
@@ -68,6 +78,7 @@ Page({
       align_v: align.CENTER_V,
       text_style: text_style.NONE,
     })
+    createWidget(widget.FILL_RECT, { x: LINE_X, y: AMOUNT_LINE_Y, w: LINE_W, h: 2, color: cat.color })
 
     createWidget(widget.BUTTON, {
       x: BTN_X,
@@ -91,6 +102,6 @@ Page({
       },
     })
 
-    drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, cat.color)
+    drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, cat.color)
   },
 })

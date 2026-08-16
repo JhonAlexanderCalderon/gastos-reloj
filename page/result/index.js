@@ -4,8 +4,8 @@ import { getDeviceInfo } from '@zos/device'
 import { log as Logger } from '@zos/utils'
 import { getCategoryById } from '../../utils/categories'
 import { BG_COLOR, TEXT_COLOR, MUTED_COLOR, GREEN_COLOR, RED_COLOR, SURFACE_COLOR, SURFACE_PRESS_COLOR } from '../../utils/theme'
-import { formatMoney, formatDateTime } from '../../utils/format'
-import { drawCornerBrackets } from '../../utils/decor'
+import { formatMoney, formatTime12h } from '../../utils/format'
+import { drawScreenFrame } from '../../utils/decor'
 import { withTimeout } from '../../utils/timeout'
 
 const logger = Logger.getLogger('result-page')
@@ -85,7 +85,7 @@ Page({
     })
     w.actionBtn.setProperty(prop.VISIBLE, false)
 
-    w.brackets = drawCornerBrackets(DEVICE_WIDTH, DEVICE_HEIGHT, MUTED_COLOR)
+    w.frame = drawScreenFrame(DEVICE_WIDTH, DEVICE_HEIGHT, TEXT_COLOR)
 
     this.saveExpense()
   },
@@ -133,7 +133,7 @@ Page({
     const cat = getCategoryById(this.state.category)
     const s = this.state
 
-    let bracketColor = MUTED_COLOR
+    let frameColor = TEXT_COLOR
 
     if (s.status === 'saving') {
       w.statusText.setProperty(prop.MORE, { text: 'Guardando...', color: TEXT_COLOR })
@@ -142,19 +142,19 @@ Page({
     } else if (s.status === 'ok') {
       w.statusText.setProperty(prop.MORE, { text: 'Gasto guardado', color: GREEN_COLOR })
       w.detailText.setProperty(prop.MORE, {
-        text: `${cat.label}  ${formatMoney(s.amount)}\n${formatDateTime(s.savedAt)}`,
+        text: `${cat.label}  ${formatMoney(s.amount)}\n${formatTime12h(s.savedAt)}`,
       })
       w.actionBtn.setProperty(prop.MORE, { text: 'Listo' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
-      bracketColor = GREEN_COLOR
+      frameColor = GREEN_COLOR
     } else {
       w.statusText.setProperty(prop.MORE, { text: 'No se pudo guardar', color: RED_COLOR })
       w.detailText.setProperty(prop.MORE, { text: 'Revisa la conexion del telefono e intenta de nuevo.' })
       w.actionBtn.setProperty(prop.MORE, { text: 'Reintentar' })
       w.actionBtn.setProperty(prop.VISIBLE, true)
-      bracketColor = RED_COLOR
+      frameColor = RED_COLOR
     }
 
-    w.brackets.forEach((b) => b.setProperty(prop.MORE, { color: bracketColor }))
+    w.frame.forEach((f) => f.setProperty(prop.MORE, { color: frameColor }))
   },
 })
